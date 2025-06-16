@@ -34,6 +34,7 @@ export const signup = async (req, res) => {
                 fullName: newUser.fullName,
                 email: newUser.email,
                 profilePic: newUser.profilePic,
+                createdAt: newUser.createdAt,
             })
         }
         else {
@@ -65,6 +66,7 @@ export const login = async (req, res) => {
             fullName: user.fullName,
             email: user.email,
             profilePic: user.profilePic,
+            createdAt: user.createdAt,
         })
     } catch (error) {
         console.log("Error in login controller", error.message);
@@ -92,7 +94,7 @@ export const updateProfile=async(req,res)=>{
         }
 
         const uploadResponse =await cloudinary.uploader.upload(profilePic);
-        const updateUser=user.findByIdAndUpdate(userId,{profilePic:uploadResponse.secure_url},{new:true})
+        const updatedUser=await User.findByIdAndUpdate(userId,{profilePic:uploadResponse.secure_url},{new:true})
 
         res.status(200).json(updatedUser);
     } catch (error) {
