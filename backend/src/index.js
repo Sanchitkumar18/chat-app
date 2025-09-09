@@ -21,7 +21,7 @@ const app = express();
 const server = createServer(app);
 
 // Setup Socket.io
-const io = setupSocketIO(server);
+setupSocketIO(server);
 
 // Middleware
 app.use(express.json({ limit: "10mb" }));

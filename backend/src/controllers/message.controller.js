@@ -1,12 +1,19 @@
 import User from "../models/user.model.js";
 import Message from "../models/message.model.js";
 import cloudinary from "../lib/cloudinary.js";
-import { getRecieverSocketId,io } from "../lib/socket.js";
+import { getRecieverSocketId } from "../lib/socket.js";
 
-export const getUsersForSidebar=async(req,res)=>{
+// We'll create a function to get the io instance when needed
+let ioInstance = null;
+
+export const setIOInstance = (io) => {
+  ioInstance = io;
+};
+
+export const getUsersForSidebar = async (req, res) => {
     try {
-        const loggedInUserId=req.user._id;
-        const filteredUsers=await User.find({_id:{$ne:loggedInUserId}}).select("-password");
+        const loggedInUserId = req.user._id;
+        const filteredUsers = await User.find({ _id: { $ne: loggedInUserId } }).select("-password");
 
         res.status(200).json(filteredUsers);
     } catch (error) {
@@ -15,14 +22,14 @@ export const getUsersForSidebar=async(req,res)=>{
     }
 }
 
-export const getMessages=async(req,res)=>{
+export const getMessages = async (req, res) => {
     try {
-        const {id:userToChatId}=req.params;
-        const myId=req.user._id;
-        const messages=await Message.find({
-            $or:[
-                {senderId:myId,recieverId:userToChatId},
-                {senderId:userToChatId,recieverId:myId}
+        const { id: userToChatId } = req.params;
+        const myId = req.user._id;
+        const messages = await Message.find({
+            $or: [
+                { senderId: myId, recieverId: userToChatId },
+                { senderId: userToChatId, recieverId: myId }
             ]
         })
         res.status(200).json(messages)
@@ -32,30 +39,30 @@ export const getMessages=async(req,res)=>{
     }
 }
 
-export const sendMessage=async(req,res)=>{
+export const sendMessage = async (req, res) => {
     try {
-        const {text,image}=req.body;
-        const {id:recieverId}=req.params
-        const senderId=req.user._id;
+        const { text, image } = req.body;
+        const { id: recieverId } = req.params
+        const senderId = req.user._id;
 
         let imageUrl;
-        if(image){
-            const uploadResponse=await cloudinary.uploader.upload(image);
-            imageUrl=uploadResponse.secure_url;
+        if (image) {
+            const uploadResponse = await cloudinary.uploader.upload(image);
+            imageUrl = uploadResponse.secure_url;
         }
 
-        const newMessage=new Message({
+        const newMessage = new Message({
             senderId,
             recieverId,
             text,
-            image:imageUrl,
+            image: imageUrl,
         });
 
         await newMessage.save();
 
-        const recieverSocketId=getRecieverSocketId(recieverId);
-        if(recieverSocketId){
-            io.to(recieverSocketId).emit("newMessage",newMessage)
+        const recieverSocketId = getRecieverSocketId(recieverId);
+        if (recieverSocketId && ioInstance) {
+            ioInstance.to(recieverSocketId).emit("newMessage", newMessage)
         }
 
         res.status(201).json(newMessage)

@@ -4,8 +4,10 @@ import { Server } from "socket.io";
 // Store connected users
 const userSocketMap = {}; // {userId: socketId}
 
+let io; // Global io instance
+
 export function setupSocketIO(server) {
-  const io = new Server(server, {
+  io = new Server(server, {
     cors: {
       origin: true,
       methods: ["GET", "POST"],
@@ -34,9 +36,21 @@ export function setupSocketIO(server) {
     });
   });
 
+  // Set the io instance for the message controller
+  import("../controllers/message.controller.js")
+    .then((module) => {
+      module.setIOInstance(io);
+    })
+    .catch((error) => {
+      console.error("Error setting IO instance:", error);
+    });
+
   return io;
 }
 
 export const getRecieverSocketId = (receiverId) => {
   return userSocketMap[receiverId];
 };
+
+// Export io instance
+export { io };
