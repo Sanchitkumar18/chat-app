@@ -30,16 +30,46 @@ const io = new Server(server, {
   },
 });
 
+// Store connected users
+const userSocketMap = {}; // {userId: socketId}
+
 // Socket.io events
 io.on("connection", (socket) => {
   console.log("New client connected:", socket.id);
 
+  // Get userId from client when they connect
+  const userId = socket.handshake.query.userId;
+  if (userId) {
+    userSocketMap[userId] = socket.id;
+    console.log(`User ${userId} connected with socket ${socket.id}`);
+  }
+
+  // Get online users (optional)
+  io.emit("getOnlineUsers", Object.keys(userSocketMap));
+
   socket.on("disconnect", () => {
     console.log("Client disconnected:", socket.id);
+    
+    // Remove user from mapping
+    if (userId) {
+      delete userSocketMap[userId];
+      console.log(`User ${userId} disconnected`);
+    }
+    
+    // Update online users
+    io.emit("getOnlineUsers", Object.keys(userSocketMap));
   });
 
   // Add your socket event handlers here
 });
+
+// Function to get receiver's socket ID
+export const getRecieverSocketId = (receiverId) => {
+  return userSocketMap[receiverId];
+};
+
+// Export both io and getRecieverSocketId
+export { app, server, io };
 
 // Middleware
 app.use(express.json({ limit: "10mb" }));
