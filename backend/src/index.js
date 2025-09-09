@@ -39,8 +39,12 @@ app.use("/api/messages", messageRoutes);
 // Production setup
 if (process.env.NODE_ENV === "production") {
   const frontendPath = path.join(__dirname, "../frontend/dist");
+  
+  // Serve static files
   app.use(express.static(frontendPath));
-  app.get("*", (req, res) => {
+  
+  // Catch-all route for SPA - FIXED: Use a proper route pattern
+  app.get(/^(?!\/api).*/, (req, res) => {
     res.sendFile(path.join(frontendPath, "index.html"));
   });
 }
