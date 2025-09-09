@@ -1,7 +1,7 @@
 import express from "express";
 import dotenv from "dotenv";
-import authRoutes from "../routes/auth.route.js";
-import messageRoutes from "../routes/message.route.js";
+import authRoutes from "./routes/auth.route.js";
+import messageRoutes from "./routes/message.route.js";
 import cors from "cors";
 import path from "path";
 import { fileURLToPath } from "url";
