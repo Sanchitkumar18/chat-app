@@ -6,7 +6,7 @@ import cors from "cors";
 import path from "path";
 import { fileURLToPath } from "url";
 import cookieParser from "cookie-parser";
-import { connectDB } from "./lib/db.js";
+import { connectDB } from "./db.js";
 
 import { createServer } from "http";
 import { Server } from "socket.io";
