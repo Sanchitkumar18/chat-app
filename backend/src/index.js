@@ -41,15 +41,16 @@ app.get("/api/health", (req, res) => {
   res.json({ status: "OK", message: "Backend is running" });
 });
 
-// Production setup - FIXED CATCH-ALL ROUTE
+// Production setup - FIXED PATH
 if (process.env.NODE_ENV === "production") {
+  // Correct path: go up two levels from src folder to reach frontend
   const frontendPath = path.resolve(__dirname, "../../frontend/dist");
   console.log("Serving frontend from:", frontendPath);
   
   // Serve static files
   app.use(express.static(frontendPath));
   
-  // FIXED: Use a regex pattern instead of '*' to avoid path-to-regexp error
+  // Catch-all route for SPA - only for non-API routes
   app.get(/^(?!\/api).*/, (req, res) => {
     res.sendFile(path.join(frontendPath, "index.html"));
   });
