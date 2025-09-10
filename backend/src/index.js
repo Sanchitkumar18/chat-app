@@ -41,7 +41,7 @@ app.get("/api/health", (req, res) => {
   res.json({ status: "OK", message: "Backend is running" });
 });
 
-// Production setup - FIXED PATH
+// Production setup - FIXED for same domain deployment
 if (process.env.NODE_ENV === "production") {
   // Correct path: go up two levels from src folder to reach frontend
   const frontendPath = path.resolve(__dirname, "../../frontend/dist");
@@ -50,9 +50,15 @@ if (process.env.NODE_ENV === "production") {
   // Serve static files
   app.use(express.static(frontendPath));
   
-  // Catch-all route for SPA - only for non-API routes
-  app.get(/^(?!\/api).*/, (req, res) => {
-    res.sendFile(path.join(frontendPath, "index.html"));
+  // Catch-all route for SPA - serve index.html for all non-API routes
+  app.get('*', (req, res, next) => {
+    // Skip API routes
+    if (req.path.startsWith('/api/')) {
+      return next();
+    }
+    
+    // For all other routes, serve the React app
+    res.sendFile(path.join(frontendPath, 'index.html'));
   });
 }
 

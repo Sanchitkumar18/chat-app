@@ -13,6 +13,7 @@ export function setupSocketIO(server) {
       methods: ["GET", "POST"],
       credentials: true,
     },
+    transports: ['websocket', 'polling'] // ADD THIS LINE
   });
 
   io.on("connection", (socket) => {
@@ -36,14 +37,19 @@ export function setupSocketIO(server) {
     });
   });
 
-  // Set the io instance for the message controller
-  import("../controllers/message.controller.js")
-    .then((module) => {
-      module.setIOInstance(io);
-    })
-    .catch((error) => {
-      console.error("Error setting IO instance:", error);
-    });
+  // Set the io instance for the message controller - FIXED
+  setTimeout(() => {
+    import("../controllers/message.controller.js")
+      .then((module) => {
+        if (module.setIOInstance) {
+          module.setIOInstance(io);
+          console.log("IO instance set for message controller");
+        }
+      })
+      .catch((error) => {
+        console.error("Error setting IO instance:", error);
+      });
+  }, 1000); // Small delay to ensure module is loaded
 
   return io;
 }
