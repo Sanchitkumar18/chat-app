@@ -36,16 +36,23 @@ app.use(cors({
 app.use("/api/auth", authRoutes);
 app.use("/api/messages", messageRoutes);
 
-// Production setup
+// Health check endpoint
+app.get("/api/health", (req, res) => {
+  res.json({ status: "OK", message: "Backend is running" });
+});
+
+// Production setup - FIXED PATH
 if (process.env.NODE_ENV === "production") {
-  const frontendPath = path.join(__dirname, "../frontend/dist");
+  // Correct path: go up two levels from src folder to reach frontend
+  const frontendPath = path.resolve(__dirname, "../../frontend/dist");
+  console.log("Serving frontend from:", frontendPath);
   
   // Serve static files
   app.use(express.static(frontendPath));
   
-  // Catch-all route for SPA - FIXED: Use a proper route pattern
+  // Catch-all route for SPA - only for non-API routes
   app.get(/^(?!\/api).*/, (req, res) => {
-    res.sendFile(path.join(__dirname, "../frontend", "dist", "index.html"));
+    res.sendFile(path.join(frontendPath, "index.html"));
   });
 }
 
